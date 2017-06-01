@@ -1,11 +1,16 @@
 var schedule = require('node-schedule');
 var path = require('path');
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 
 var conn = require(path.resolve() + '/connection');
 
 schedule.scheduleJob('* * * * * *', function () {
+    // Random number
+    var rand = process.hrtime()[0] + process.hrtime()[1];
+    // Date String
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
 
     //////// CONFIG //////////
     var app = 'bola';
@@ -152,6 +157,43 @@ schedule.scheduleJob('* * * * * *', function () {
                                                             send_status: 1
                                                         }
                                                     };
+
+                                                    // create file to push //file/push
+                                                    var smsFileName = path.resolve() + '/system/files/push/push-' + dateString + '_' + rand + '.json';
+
+                                                    if (fs.existsSync(path.resolve() + '/system/files/push')) {
+                                                        fs.writeFile(smsFileName, JSON.stringify(welcome_message), function (err) {
+                                                            if (!err) {
+                                                                console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' if');
+                                                            } else {
+                                                                console.log(err);
+                                                            }
+                                                        });
+                                                    } else {
+                                                        function makeDir(callback) {
+                                                            mkdirp(path.resolve() + '/system/files/push', function (err) {
+                                                                if (!err) {
+                                                                    callback('mkdirOk');
+                                                                } else {
+                                                                    callback(err);
+                                                                }
+                                                            });
+                                                        }
+
+                                                        makeDir(function (result) {
+                                                            if (result === 'mkdirOk') {
+                                                                fs.writeFile(smsFileName, JSON.stringify(welcome_message), function (err) {
+                                                                    if (!err) {
+                                                                        console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' else');
+                                                                    } else {
+                                                                        console.log(err);
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                console.log(result);
+                                                            }
+                                                        });
+                                                    }
                                                 }
 
                                                 // -----------------------------
@@ -217,22 +259,48 @@ schedule.scheduleJob('* * * * * *', function () {
 
                                     newObject(function (newObj) {
                                         if (newObj !== 'errGetcontent') { // << tidak error
-                                            // tidak ada kontent atau collection content
-                                            console.log(newObj)
+                                            function createPushFile(callback) {
+                                                // create file to push //file/push
+                                                var smsFileName = path.resolve() + '/system/files/push/push-' + dateString + '_' + rand + '.json';
+
+                                                if (fs.existsSync(path.resolve() + '/system/files/push')) {
+                                                    fs.writeFile(smsFileName, JSON.stringify(newObj), function (err) {
+                                                        if (!err) {
+                                                            console.log(dateNow + ' : App Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' if');
+                                                        } else {
+                                                            console.log(err);
+                                                        }
+                                                    });
+                                                } else {
+                                                    function makeDir(callback) {
+                                                        mkdirp(path.resolve() + '/system/files/push', function (err) {
+                                                            if (!err) {
+                                                                callback('mkdirOk');
+                                                            } else {
+                                                                callback(err);
+                                                            }
+                                                        });
+                                                    }
+
+                                                    makeDir(function (result) {
+                                                        if (result === 'mkdirOk') {
+                                                            fs.writeFile(smsFileName, JSON.stringify(newObj), function (err) {
+                                                                if (!err) {
+                                                                    console.log(dateNow + ' : App Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' else');
+                                                                } else {
+                                                                    console.log(err);
+                                                                }
+                                                            });
+                                                        } else {
+                                                            console.log(result);
+                                                        }
+                                                    });
+                                                }
+                                            }
+
                                         } else {
-                                            console.log('b')
+                                            console.log('b');
                                         }
-//                                        if (newObj === 'insertPushErr' || newObj === 'resDelFileErr') {
-//                                            console.log(newObj);
-//                                        } else {
-//                                            insData(newObj, function (resInsData) {
-//                                                if (resInsData === 'errDelFile' || resInsData === 'err') {
-//                                                    console.log(resInsData);
-//                                                } else {
-//                                                    console.log('ok app');
-//                                                }
-//                                            });
-//                                        }
                                     });
                                 }
 

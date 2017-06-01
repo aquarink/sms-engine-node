@@ -14,7 +14,7 @@ var moReader = require('./system/services/mo_read');
 //var drReader = require('./system/services/dr_reader');
 
 // App Service
-var appBola = require('./system/services/apps/bola');
+//var appBola = require('./system/services/apps/bola');
 
 // Push Service Telco
 //var xl = require('./system/services/push/xl');
