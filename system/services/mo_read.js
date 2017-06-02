@@ -21,125 +21,135 @@ schedule.scheduleJob('* * * * * *', function () {
                                 if (!err) {
                                     var jsonData = JSON.parse(data);
 
-                                    // Move file as apps/keyword
-                                    var newPath = path.resolve() + '/system/files/apps/' + jsonData.keyword;
-                                    if (fs.existsSync(newPath)) {
-
-                                        //Check Member exist
-                                        function memberExist(callback) {
-                                            conn.db.collection('subscriber').find({'telco': jsonData.telco, 'shortcode': jsonData.shortcode, 'msisdn': jsonData.msisdn, 'keyword': jsonData.keyword}).toArray(function (err, doc) {
-                                                if (!err) {
-                                                    if (doc.length === 0) {
-                                                        callback('dataNull');
-                                                    } else {
-                                                        callback('dataExist');
-                                                    }
+                                    function checkApp(callback) {
+                                        conn.db.collection('apps_config').find({'app_name': jsonData.keyword}).count(function (err, count) {
+                                            if (!err) {
+                                                if (count === 0) {
+                                                    callback('appNull');
                                                 } else {
-                                                    callback('memberErr');
+                                                    callback('appExisth');
                                                 }
-                                            });
-                                        }
-
-                                        // Insert member collection
-                                        function insertMember(memberObj, callback) {
-                                            memberExist(function (memberCheck) {
-                                                if (memberCheck === 'dataNull') {
-                                                    conn.db.collection('subscriber').insertOne(memberObj, function (err, res) {
-                                                        if (err) {
-                                                            callback('insertMemberErr');
-                                                        } else {
-                                                            callback('insertMemberOk');
-                                                        }
-                                                    });
-                                                } else {
-                                                    callback(memberCheck);
-                                                }
-                                            });
-                                        }
-
-                                        insertMember(jsonData, function (resInsMember) {
-                                            if (resInsMember === 'insertMemberOk') {
-                                                fs.rename(filePath, newPath + '/' + file, function (err) {
-                                                    if (!err) {
-                                                        console.log(dateNow + ' : MO Read => Add member & Move file to apps created if');
-                                                    }
-                                                });
-                                            } else if (resInsMember === 'dataExist') {
-                                                fs.rename(filePath, newPath + '/' + file, function (err) {
-                                                    if (!err) {
-                                                        console.log(dateNow + ' : MO Read => Move file to apps created if');
-                                                    }
-                                                });
-                                            }
-                                        });
-
-                                    } else {
-                                        function makeDir(mkPath, callback) {
-                                            mkdirp(mkPath, function (err) {
-                                                if (!err) {
-                                                    callback('mkdirOk');
-                                                } else {
-                                                    callback(err);
-                                                }
-                                            });
-                                        }
-
-                                        makeDir(newPath, function (result) {
-                                            if (result === 'mkdirOk') {
-                                                //Check Member exist
-                                                function memberExist(callback) {
-                                                    conn.db.collection('subscriber').find({'telco': jsonData.telco, 'shortcode': jsonData.shortcode, 'msisdn': jsonData.msisdn, 'keyword': jsonData.keyword}).toArray(function (err, doc) {
-                                                        if (!err) {
-                                                            if (doc.length === 0) {
-                                                                callback('dataNull');
-                                                            } else {
-                                                                callback('dataExist');
-                                                            }
-                                                        } else {
-                                                            callback('memberErr');
-                                                        }
-                                                    });
-                                                }
-
-                                                // Insert member collection
-                                                function insertMember(memberObj, callback) {
-                                                    memberExist(function (memberCheck) {
-                                                        if (memberCheck === 'dataNull') {
-                                                            conn.db.collection('subscriber').insertOne(memberObj, function (err, res) {
-                                                                if (err) {
-                                                                    callback('insertMemberErr');
-                                                                } else {
-                                                                    callback('insertMemberOk');
-                                                                }
-                                                            });
-                                                        } else {
-                                                            callback(memberCheck);
-                                                        }
-                                                    });
-                                                }
-
-                                                insertMember(jsonData, function (resInsMember) {
-                                                    if (resInsMember === 'insertMemberOk') {
-                                                        fs.rename(filePath, newPath + '/' + file, function (err) {
-                                                            if (!err) {
-                                                                console.log(dateNow + ' : MO Read => Add member & Move file to apps created else');
-                                                            }
-                                                        });
-                                                    } else if (resInsMember === 'dataExist') {
-                                                        fs.rename(filePath, newPath + '/' + file, function (err) {
-                                                            if (!err) {
-                                                                console.log(dateNow + ' : MO Read => Move file to apps created else');
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                            } else {
-                                                console.log(result + ' makeDir-mo-read');
                                             }
                                         });
                                     }
+
+
+                                    checkApp(function (resCheckApp) {
+                                        var newPath;
+
+                                        if (resCheckApp === 'appNull') {
+                                            newPath = path.resolve() + '/system/files/apps/other';
+                                        } else {
+                                            newPath = path.resolve() + '/system/files/apps/' + jsonData.keyword;
+                                        }
+
+                                        if (fs.existsSync(newPath)) {
+                                            function moveFile(oldFile, newFile, callback) {
+                                                fs.rename(oldFile, newFile + '/' + file, function (err) {
+                                                    if (!err) {
+                                                        callback('ok');
+                                                    } else {
+                                                        callback(err);
+                                                    }
+                                                });
+                                            }
+
+                                            moveFile(filePath, newPath, function (resMoveFile) {
+                                                if (resMoveFile === 'ok') {
+                                                    //Check Member exist
+                                                    function memberExist(callback) {
+                                                        conn.db.collection('subscriber').find({'telco': jsonData.telco, 'shortcode': jsonData.shortcode, 'msisdn': jsonData.msisdn, 'keyword': jsonData.keyword}).toArray(function (err, doc) {
+                                                            if (!err) {
+                                                                if (doc.length === 0) {
+                                                                    callback('dataNull');
+                                                                } else {
+                                                                    callback('dataExist');
+                                                                }
+                                                            } else {
+                                                                callback('memberErr');
+                                                            }
+                                                        });
+                                                    }
+
+                                                    // Insert member collection
+                                                    memberExist(function (memberCheck) {
+                                                        if (memberCheck === 'dataNull') {
+                                                            conn.db.collection('subscriber').insertOne(jsonData, function (err, res) {
+                                                                if (!err) {
+                                                                    console.log(dateNow + ' : MO Read => Add member & Move file to apps created if');
+                                                                }
+                                                            });
+                                                        } else {
+                                                            console.log(dateNow + ' : MO Read => Move file to apps created if');
+                                                        }
+                                                    });
+                                                }
+                                            });
+
+                                        } else {
+                                            function makeDir(mkPath, callback) {
+                                                mkdirp(mkPath, function (err) {
+                                                    if (!err) {
+                                                        callback('mkdirOk');
+                                                    } else {
+                                                        callback(err);
+                                                    }
+                                                });
+                                            }
+
+                                            makeDir(newPath, function (result) {
+                                                if (result === 'mkdirOk') {
+                                                    function moveFile(oldFile, newFile, callback) {
+                                                        fs.rename(oldFile, newFile + '/' + file, function (err) {
+                                                            if (!err) {
+                                                                callback('ok');
+                                                            } else {
+                                                                callback(err);
+                                                            }
+                                                        });
+                                                    }
+
+                                                    moveFile(filePath, newPath, function (resMoveFile) {
+                                                        if (resMoveFile === 'ok') {
+                                                            //Check Member exist
+                                                            function memberExist(callback) {
+                                                                conn.db.collection('subscriber').find({'telco': jsonData.telco, 'shortcode': jsonData.shortcode, 'msisdn': jsonData.msisdn, 'keyword': jsonData.keyword}).toArray(function (err, doc) {
+                                                                    if (!err) {
+                                                                        if (doc.length === 0) {
+                                                                            callback('dataNull');
+                                                                        } else {
+                                                                            callback('dataExist');
+                                                                        }
+                                                                    } else {
+                                                                        callback('memberErr');
+                                                                    }
+                                                                });
+                                                            }
+
+                                                            // Insert member collection
+                                                            memberExist(function (memberCheck) {
+                                                                if (memberCheck === 'dataNull') {
+                                                                    conn.db.collection('subscriber').insertOne(jsonData, function (err, res) {
+                                                                        if (!err) {
+                                                                            console.log(dateNow + ' : MO Read => Add member & Move file to apps created else');
+                                                                        }
+                                                                    });
+                                                                } else {
+                                                                    console.log(dateNow + ' : MO Read => Move file to apps created else');
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                } else {
+                                                    console.log(result + ' makeDir-mo-read');
+                                                }
+                                            });
+                                        }
+                                    });
+                                } else {
+                                    console.log(dateNow + ' : Mo Read => Connection DB refuse');
                                 }
-                            });
+                            }); // if not connect DB
                         }
                     });
                 });

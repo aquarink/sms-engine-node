@@ -1,19 +1,19 @@
 var schedule = require('node-schedule');
 var path = require('path');
 var fs = require('fs');
-var mkdirp = require('mkdirp');
 
 var conn = require(path.resolve() + '/connection');
 
+var app = 'bola';
+
 schedule.scheduleJob('* * * * * *', function () {
+
+    //////// CONFIG //////////
     // Random number
     var rand = process.hrtime()[0] + process.hrtime()[1];
     // Date String
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
-
-    //////// CONFIG //////////
-    var app = 'bola';
     //////// CONFIG //////////
 
     var appDir = path.resolve() + '/system/files/apps/' + app;
@@ -133,95 +133,64 @@ schedule.scheduleJob('* * * * * *', function () {
                                                 if (content.pushInfo === 1) {
                                                     var welcome_message = {
                                                         telco: {
-                                                            telco_name: jsonData.telco
+                                                            'telco_name': jsonData.telco
                                                         },
                                                         origin: {
-                                                            shortcode: jsonData.shortcode,
-                                                            msisdn: jsonData.msisdn,
-                                                            sms_fild: jsonData.sms_fild,
-                                                            keyword: jsonData.keyword,
-                                                            trx_id: jsonData.trx_id,
-                                                            trx_date: jsonData.trx_date,
-                                                            session_id: jsonData.session_id,
-                                                            session_date: jsonData.session_date,
-                                                            reg_type: jsonData.reg_type
+                                                            'shortcode': jsonData.shortcode,
+                                                            'msisdn': jsonData.msisdn,
+                                                            'sms_field': jsonData.sms_field,
+                                                            'keyword': jsonData.keyword,
+                                                            'trx_id': jsonData.trx_id,
+                                                            'trx_date': jsonData.trx_date,
+                                                            'session_id': jsonData.session_id,
+                                                            'session_date': jsonData.session_date,
+                                                            'reg_type': jsonData.reg_type
                                                         },
 
                                                         apps: {
-                                                            name: app,
-                                                            no: '',
-                                                            content: 'Welcome message ' + app
+                                                            'name': app,
+                                                            'no': '',
+                                                            'content': 'Welcome message ' + app
                                                         },
                                                         config: {
-                                                            cost: 'PULL-0',
-                                                            send_status: 1
+                                                            'cost': 'PULL-0',
+                                                            'send_status': 1
                                                         }
                                                     };
 
-                                                    // create file to push //file/push
-                                                    var smsFileName = path.resolve() + '/system/files/push/push-' + dateString + '_' + rand + '.json';
-
-                                                    if (fs.existsSync(path.resolve() + '/system/files/push')) {
-                                                        fs.writeFile(smsFileName, JSON.stringify(welcome_message), function (err) {
-                                                            if (!err) {
-                                                                console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' if');
-                                                            } else {
-                                                                console.log(err);
-                                                            }
-                                                        });
-                                                    } else {
-                                                        function makeDir(callback) {
-                                                            mkdirp(path.resolve() + '/system/files/push', function (err) {
-                                                                if (!err) {
-                                                                    callback('mkdirOk');
-                                                                } else {
-                                                                    callback(err);
-                                                                }
-                                                            });
+                                                    conn.db.collection('sms_apps').insertOne(welcome_message, function (err, res) {
+                                                        if (!err) {
+                                                            console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
                                                         }
-
-                                                        makeDir(function (result) {
-                                                            if (result === 'mkdirOk') {
-                                                                fs.writeFile(smsFileName, JSON.stringify(welcome_message), function (err) {
-                                                                    if (!err) {
-                                                                        console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' else');
-                                                                    } else {
-                                                                        console.log(err);
-                                                                    }
-                                                                });
-                                                            } else {
-                                                                console.log(result);
-                                                            }
-                                                        });
-                                                    }
+                                                    });
                                                 }
 
                                                 // -----------------------------
 
                                                 var sms_app = {
                                                     telco: {
-                                                        telco_name: jsonData.telco
+                                                        'telco_name': jsonData.telco
                                                     },
                                                     origin: {
-                                                        shortcode: jsonData.shortcode,
-                                                        msisdn: jsonData.msisdn,
-                                                        sms_fild: jsonData.sms_fild,
-                                                        keyword: jsonData.keyword,
-                                                        trx_id: jsonData.trx_id,
-                                                        trx_date: jsonData.trx_date,
-                                                        session_id: jsonData.session_id,
-                                                        session_date: jsonData.session_date,
-                                                        reg_type: jsonData.reg_type
+                                                        'shortcode': jsonData.shortcode,
+                                                        'msisdn': jsonData.msisdn,
+                                                        'sms_field': jsonData.sms_field,
+                                                        'keyword': jsonData.keyword,
+                                                        'trx_id': jsonData.trx_id,
+                                                        'trx_date': jsonData.trx_date,
+                                                        'session_id': jsonData.session_id,
+                                                        'session_date': jsonData.session_date,
+                                                        'reg_type': jsonData.reg_type
                                                     },
 
                                                     apps: {
-                                                        name: app,
-                                                        no: content.content.no_content,
-                                                        content: content.content.content_field
+                                                        'name': app,
+                                                        'no': content.content.no_content,
+                                                        'content': content.content.content_field
                                                     },
                                                     config: {
-                                                        cost: 'PULL-' + content.config.cost.pull,
-                                                        send_status: 1
+                                                        'cost': 'PULL-' + content.config.cost.pull,
+                                                        'send_status': 1
                                                     }
                                                 };
                                                 callback(sms_app);
@@ -235,73 +204,29 @@ schedule.scheduleJob('* * * * * *', function () {
                                             if (!err) {
                                                 callback('ok');
                                             } else {
-                                                callback('err')
+                                                callback('err');
                                             }
                                         });
                                     }
 
-                                    // Insert new Object to DB
-                                    function insData(obj, callback) {
-                                        delFile(filePath, function (resDelFile) {
-                                            if (resDelFile === 'ok') {
-                                                conn.db.collection('sms_apps').insertOne(obj, function (err, res) {
-                                                    if (!err) {
-                                                        callback('insertPushOk');
-                                                    } else {
-                                                        callback('insertPushErr');
-                                                    }
-                                                });
-                                            } else {
-                                                callback('resDelFileErr');
-                                            }
-                                        });
-                                    }
-
-                                    newObject(function (newObj) {
-                                        if (newObj !== 'errGetcontent') { // << tidak error
-                                            function createPushFile(callback) {
-                                                // create file to push //file/push
-                                                var smsFileName = path.resolve() + '/system/files/push/push-' + dateString + '_' + rand + '.json';
-
-                                                if (fs.existsSync(path.resolve() + '/system/files/push')) {
-                                                    fs.writeFile(smsFileName, JSON.stringify(newObj), function (err) {
+                                    // execute
+                                    delFile(filePath, function (resDelFile) {
+                                        if (resDelFile === 'ok') {
+                                            newObject(function (newObj) {
+                                                if (newObj !== 'errGetcontent') { // << tidak error
+                                                    conn.db.collection('sms_apps').insertOne(newObj, function (err, res) {
                                                         if (!err) {
-                                                            console.log(dateNow + ' : App Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' if');
-                                                        } else {
-                                                            console.log(err);
+                                                            console.log(dateNow + ' : App Message Create => ' + jsonData.telco + ' - ' + jsonData.msisdn + ' if');
                                                         }
                                                     });
                                                 } else {
-                                                    function makeDir(callback) {
-                                                        mkdirp(path.resolve() + '/system/files/push', function (err) {
-                                                            if (!err) {
-                                                                callback('mkdirOk');
-                                                            } else {
-                                                                callback(err);
-                                                            }
-                                                        });
-                                                    }
-
-                                                    makeDir(function (result) {
-                                                        if (result === 'mkdirOk') {
-                                                            fs.writeFile(smsFileName, JSON.stringify(newObj), function (err) {
-                                                                if (!err) {
-                                                                    console.log(dateNow + ' : App Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn + ' else');
-                                                                } else {
-                                                                    console.log(err);
-                                                                }
-                                                            });
-                                                        } else {
-                                                            console.log(result);
-                                                        }
-                                                    });
+                                                    console.log('b-302');
                                                 }
-                                            }
-
-                                        } else {
-                                            console.log('b');
+                                            });
                                         }
                                     });
+                                } else {
+                                    console.log(dateNow + ' : App ' + app + ' => Connection DB refuse');
                                 }
 
                             });
@@ -311,6 +236,55 @@ schedule.scheduleJob('* * * * * *', function () {
             }
         });
     }
+});
+
+schedule.scheduleJob('* * * * * *', function () {
+
+    //////// CONFIG //////////
+    // Random number
+    var rand = process.hrtime()[0] + process.hrtime()[1];
+    // Date String
+    var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
+
+    // [0] = "Sunday" [1] = "Monday" [2] = "Tuesday" [3] = "Wednesday" [4] = "Thursday" [5] = "Friday" [6] = "Saturday";
+    //console.log(new Date().getDay());
+    //////// CONFIG //////////
+
+
+    conn.connect(function (err) {
+        if (!err) {
+            // Fetch Config of app
+            function contentConfig(callback) {
+                conn.db.collection('apps_config').find().toArray(function (err, configData) {
+                    if (!err) {
+                        callback(configData);
+                    } else {
+                        callback('err');
+                    }
+                });
+            }
+
+            contentConfig(function (resConfig) {
+                if (resConfig === 'err') {
+                    console.log('errConfig');
+                } else {
+                    for (var i = 0; i < resConfig.length; i++) {
+                        for (var j = 0; j < resConfig[i].push_time.length; j++) {
+//                            if(new Date().getDay() === resConfig[i].push_time[j] && 13 < new Date().getHours() < 14) {
+//                                console.log('yes');
+//                            } else {
+//                                console.log('no');
+//                            }
+                        }
+                    }
+                }
+            });
+
+        } else {
+            console.log(dateNow + ' : App ' + app + ' 2 => Connection DB refuse');
+        }
+    });
 });
 
 module.exports = schedule;

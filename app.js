@@ -12,12 +12,14 @@ var moCreate = require('./system/services/mo_create');
 // Services
 var moReader = require('./system/services/mo_read');
 //var drReader = require('./system/services/dr_reader');
+var wrongKeywordRead = require('./system/services/wrong_keyword_read');
+//var pushReader = require('./system/services/push_read');
 
 // App Service
-//var appBola = require('./system/services/apps/bola');
+var appBola = require('./system/services/apps/bola');
 
 // Push Service Telco
-//var xl = require('./system/services/push/xl');
+var xl = require('./system/services/telco-push/xl');
 
 // Initialize router
 app.use('/mo', moCreate);
