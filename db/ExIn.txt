@@ -1,0 +1,11 @@
+Export
+D:\MongoDB\Server\3.4\bin\mongoexport.exe -d smsgwlocal -c apps_config -o apps_config.json
+D:\MongoDB\Server\3.4\bin\mongoexport.exe -d smsgwlocal -c apps_content -o apps_content.json
+D:\MongoDB\Server\3.4\bin\mongoexport.exe -d smsgwlocal -c telco_config -o telco_config.json
+
+
+Import
+
+D:\MongoDB\Server\3.4\bin\mongoimport.exe -d smsgwlocal -c apps_config apps_config.json
+D:\MongoDB\Server\3.4\bin\mongoimport.exe -d smsgwlocal -c apps_content apps_content.json
+D:\MongoDB\Server\3.4\bin\mongoimport.exe -d smsgwlocal -c telco_config telco_config.json
