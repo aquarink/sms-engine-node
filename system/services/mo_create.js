@@ -3,6 +3,8 @@ var path = require('path');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 
+var objId = require('mongodb').ObjectID;
+
 var router = express.Router();
 
 router.get('/xl', function (req, res, next) {
@@ -20,7 +22,8 @@ router.get('/xl', function (req, res, next) {
     var parseSms = sms.replace(/\s+/g, '-');
 
     // Random number
-    var rand = process.hrtime()[0] + process.hrtime()[1];
+    var rand = Math.floor((Math.random() * 10000000) + 1);
+    var rand2 = process.hrtime()[0] * 1000000 + process.hrtime()[1];
 
     // Date Now String 
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -68,13 +71,13 @@ router.get('/xl', function (req, res, next) {
             keyword: keyword,
             trx_id: trxId,
             trx_date: trxDate,
-            session_id: dateString + rand,
+            session_id: dateString + new objId(),
             session_date: dateNow,
             reg_type: reg
         };
 
         // File Name
-        var smsFileName = path.resolve() + '/system/files/mo/' + parseSms + '&' + dateString + rand + '.json';
+        var smsFileName = path.resolve() + '/system/files/mo/MO-' + dateString + new objId() + '.json';
 
         if (fs.existsSync(path.resolve() + '/system/files/mo')) {
             fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {

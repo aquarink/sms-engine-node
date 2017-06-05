@@ -2,6 +2,8 @@ var schedule = require('node-schedule');
 var path = require('path');
 var fs = require('fs');
 
+var objId = require('mongodb').ObjectID;
+
 var conn = require(path.resolve() + '/connection');
 
 var app = 'bola';
@@ -10,7 +12,7 @@ schedule.scheduleJob('* * * * * *', function () {
 
     //////// CONFIG //////////
     // Random number
-    var rand = process.hrtime()[0] + process.hrtime()[1];
+    var rand = Math.floor((Math.random() * 10000000) + 1);
     // Date String
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
@@ -140,10 +142,10 @@ schedule.scheduleJob('* * * * * *', function () {
                                                             'msisdn': jsonData.msisdn,
                                                             'sms_field': jsonData.sms_field,
                                                             'keyword': jsonData.keyword,
-                                                            'trx_id': jsonData.trx_id,
-                                                            'trx_date': jsonData.trx_date,
-                                                            'session_id': jsonData.session_id,
-                                                            'session_date': jsonData.session_date,
+                                                            'trx_id': dateString + rand,
+                                                            'trx_date': dateNow,
+                                                            'session_id': dateString + new objId(),
+                                                            'session_date': dateNow,
                                                             'reg_type': jsonData.reg_type
                                                         },
 

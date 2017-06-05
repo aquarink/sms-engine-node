@@ -7,13 +7,12 @@ var app = express();
 
 // Including
 var moCreate = require('./system/services/mo_create');
-//var drCreate = require('./system/services/dr_create');
+var drCreate = require('./system/services/dr_create');
 
 // Services
 var moReader = require('./system/services/mo_read');
-//var drReader = require('./system/services/dr_reader');
+var drReader = require('./system/services/dr_read');
 var wrongKeywordRead = require('./system/services/wrong_keyword_read');
-//var pushReader = require('./system/services/push_read');
 
 // App Service
 var appBola = require('./system/services/apps/bola');
@@ -23,7 +22,7 @@ var xl = require('./system/services/telco-push/xl');
 
 // Initialize router
 app.use('/mo', moCreate);
-//app.use('/dr', drCreate);
+app.use('/dr', drCreate);
 
 //Error Handling
 app.get('*', function (req, res) {
