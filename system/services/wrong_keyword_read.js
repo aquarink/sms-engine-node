@@ -1,6 +1,7 @@
 var schedule = require('node-schedule');
 var path = require('path');
-var fs = require('fs');
+//var fs = require('fs');
+var fs = require('graceful-fs');
 
 var conn = require(path.resolve() + '/connection');
 

@@ -42,117 +42,129 @@ schedule.scheduleJob('* * * * * *', function () {
                 if (result === 'err' || result === 0) {
                     //console.log(result + ' aaa');
                 } else {
-                    conn.db.collection('sms_apps').find({'telco.telco_name': result.telco_name}).limit(result.push_limit).toArray(function (err, smsPushData) {
-                        if (!err) {
+                    try {
+                        conn.db.collection('sms_apps').find({'telco.telco_name': result.telco_name}).limit(result.push_limit).toArray(function (err, smsPushData) {
+                            if (!err) {
 
-                            if (smsPushData.length === 0) {
-                                //console.log('nullData');
-                            } else {
-                                for (var i = 0; i < smsPushData.length; i++) {
-                                    var resReq = reQuest('GET', 'http://localhost:3010/xl/incoming?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=PULL-' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212');
+                                if (smsPushData.length === 0) {
+                                    //console.log('nullData');
+                                } else {
+                                    for (var i = 0; i < smsPushData.length; i++) {
+                                        try {
+                                            var resReq = reQuest('GET', 'http://localhost:3010/xl/incoming?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=PULL-' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212');
+                                            if (resReq.statusCode === 200) {
+                                                function newObj(callback) {
+                                                    if (resReq.getBody('utf8') === 'ok') {
+                                                        //Trx Id exist // Pull
+                                                        var smsPush = {
+                                                            telco: {
+                                                                'telco_name': smsPushData[i].telco.telco_name
+                                                            },
+                                                            origin: {
+                                                                'shortcode': smsPushData[i].origin.shortcode,
+                                                                'msisdn': smsPushData[i].origin.msisdn,
+                                                                'sms_field': smsPushData[i].origin.sms_field,
+                                                                'keyword': smsPushData[i].origin.keyword,
+                                                                'trx_id': smsPushData[i].origin.trx_id,
+                                                                'trx_date': smsPushData[i].origin.trx_date,
+                                                                'session_id': smsPushData[i].origin.session_id,
+                                                                'session_date': smsPushData[i].origin.session_date,
+                                                                'reg_type': smsPushData[i].origin.reg_type
+                                                            },
 
-                                    function newObj(callback) {
-                                        if (resReq.getBody('utf8') === 'ok') {
-                                            //Trx Id exist // Pull
-                                            var smsPush = {
-                                                telco: {
-                                                    'telco_name': smsPushData[i].telco.telco_name
-                                                },
-                                                origin: {
-                                                    'shortcode': smsPushData[i].origin.shortcode,
-                                                    'msisdn': smsPushData[i].origin.msisdn,
-                                                    'sms_field': smsPushData[i].origin.sms_field,
-                                                    'keyword': smsPushData[i].origin.keyword,
-                                                    'trx_id': smsPushData[i].origin.trx_id,
-                                                    'trx_date': smsPushData[i].origin.trx_date,
-                                                    'session_id': smsPushData[i].origin.session_id,
-                                                    'session_date': smsPushData[i].origin.session_date,
-                                                    'reg_type': smsPushData[i].origin.reg_type
-                                                },
+                                                            apps: {
+                                                                'name': smsPushData[i].apps.name,
+                                                                'no': smsPushData[i].apps.no,
+                                                                'content': smsPushData[i].apps.content
+                                                            },
+                                                            config: {
+                                                                'cost': 'PULL-' + smsPushData[i].config.cost,
+                                                                'send_status': 1
+                                                            }
+                                                        };
 
-                                                apps: {
-                                                    'name': smsPushData[i].apps.name,
-                                                    'no': smsPushData[i].apps.no,
-                                                    'content': smsPushData[i].apps.content
-                                                },
-                                                config: {
-                                                    'cost': 'PULL-' + smsPushData[i].config.cost,
-                                                    'send_status': 1
+                                                        callback(smsPush);
+
+                                                    } else {
+                                                        //Trx Id not exist // Push
+                                                        var smsPush = {
+                                                            telco: {
+                                                                'telco_name': smsPushData[i].telco.telco_name
+                                                            },
+                                                            origin: {
+                                                                'shortcode': smsPushData[i].origin.shortcode,
+                                                                'msisdn': smsPushData[i].origin.msisdn,
+                                                                'sms_field': smsPushData[i].origin.sms_field,
+                                                                'keyword': smsPushData[i].origin.keyword,
+                                                                'trx_id': resReq.getBody('utf8'),
+                                                                'trx_date': smsPushData[i].origin.trx_date,
+                                                                'session_id': smsPushData[i].origin.session_id,
+                                                                'session_date': smsPushData[i].origin.session_date,
+                                                                'reg_type': smsPushData[i].origin.reg_type
+                                                            },
+
+                                                            apps: {
+                                                                'name': smsPushData[i].apps.name,
+                                                                'no': smsPushData[i].apps.no,
+                                                                'content': smsPushData[i].apps.content
+                                                            },
+                                                            config: {
+                                                                'cost': 'PULL-' + smsPushData[i].config.cost,
+                                                                'send_status': 1
+                                                            }
+                                                        };
+                                                        callback(smsPush);
+                                                    }
                                                 }
-                                            };
 
-                                            callback(smsPush);
+                                                // 
+                                                newObj(function (datas) {
+                                                    // Delete data from sms_apps
+                                                    function deleteSmsApps(dt, callback) {
+                                                        conn.db.collection('sms_apps').remove({"origin.session_id": dt.origin.session_id}, function (err, result) {
+                                                            if (!err) {
+                                                                callback('deleteOk');
+                                                            } else {
+                                                                callback('err');
+                                                            }
+                                                        });
 
-                                        } else {
-                                            //Trx Id not exist // Push
-                                            var smsPush = {
-                                                telco: {
-                                                    'telco_name': smsPushData[i].telco.telco_name
-                                                },
-                                                origin: {
-                                                    'shortcode': smsPushData[i].origin.shortcode,
-                                                    'msisdn': smsPushData[i].origin.msisdn,
-                                                    'sms_field': smsPushData[i].origin.sms_field,
-                                                    'keyword': smsPushData[i].origin.keyword,
-                                                    'trx_id': resReq.getBody('utf8'),
-                                                    'trx_date': smsPushData[i].origin.trx_date,
-                                                    'session_id': smsPushData[i].origin.session_id,
-                                                    'session_date': smsPushData[i].origin.session_date,
-                                                    'reg_type': smsPushData[i].origin.reg_type
-                                                },
 
-                                                apps: {
-                                                    'name': smsPushData[i].apps.name,
-                                                    'no': smsPushData[i].apps.no,
-                                                    'content': smsPushData[i].apps.content
-                                                },
-                                                config: {
-                                                    'cost': 'PULL-' + smsPushData[i].config.cost,
-                                                    'send_status': 1
-                                                }
-                                            };
-                                            callback(smsPush);
+                                                    }
+
+                                                    deleteSmsApps(datas, function (delSms) {
+                                                        if (delSms === 'deleteOk') {
+                                                            try {
+                                                                conn.db.collection('sms_push').insert(datas, function (err, res) {
+                                                                    if (!err) {
+                                                                        console.log(dateNow + ' : Telco ' + telcoProvider + ' Push => New Obj, Delete Sms App, Push to Telco & Insert Push ok');
+                                                                    }
+                                                                });
+                                                            } catch (err) {
+                                                                console.log(dateNow + ' Catch error ' + telcoProvider + ' sms_push insert');
+                                                            }
+                                                        } else {
+                                                            console.log('aaaaaaaaaaaaaa');
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                        } catch (err) {
+                                            console.log(dateNow + ' Catch error ' + telcoProvider + ' push url');
                                         }
                                     }
-
-                                    // 
-                                    newObj(function (datas) {
-                                        // Delete data from sms_apps
-                                        function deleteSmsApps(dt, callback) {
-                                            conn.db.collection('sms_apps').remove({"origin.session_id": dt.origin.session_id}, function (err, result) {
-                                                if (!err) {
-                                                    callback('deleteOk');
-                                                } else {
-                                                    callback('err');
-                                                }
-                                            });
-
-
-                                        }
-
-                                        deleteSmsApps(datas, function (delSms) {
-                                            if (delSms === 'deleteOk') {
-                                                conn.db.collection('sms_push').insertOne(datas, function (err, res) {
-                                                    if (!err) {
-                                                        console.log(dateNow + ' : Telco ' + telcoProvider + ' Push => New Obj, Delete Sms App, Push to Telco & Insert Push ok');
-                                                    } else {
-                                                        console.log(delSms + ' asas');
-                                                    }
-                                                });
-                                            } else {
-                                                console.log('aaaaaaaaaaaaaa');
-                                            }
-                                        });
-                                    });
                                 }
+                            } else {
+                                console.log('err-169');
                             }
-                        } else {
-                            console.log('err-169');
-                        }
-                    });
+                        });
+                    } catch (err) {
+                        console.log(dateNow + ' Catch error ' + telcoProvider + ' logic');
+                    }
                 }
             });
         } else {
+            //console.log(err);
             console.log(dateNow + ' : Telco ' + telcoProvider + ' => Connection DB refuse');
         }
     });
