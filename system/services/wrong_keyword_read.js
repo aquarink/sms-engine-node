@@ -3,9 +3,9 @@ var path = require('path');
 //var fs = require('fs');
 var fs = require('graceful-fs');
 
-var conn = require(path.resolve() + '/connection');
+var conn = require(path.resolve() + '/connection.js');
 
-schedule.scheduleJob('* * * * * *', function () {
+schedule.scheduleJob('*/2 * * * * *', function () {
     // Random number
     var rand = process.hrtime()[0] + process.hrtime()[1];
     // Date String
@@ -61,11 +61,19 @@ schedule.scheduleJob('* * * * * *', function () {
 
                             unlinkFile(filePath, function (result) {
                                 if (result === 'ok') {
-                                    conn.db.collection('sms_apps').insertOne(keywordNotFoundSmsPush, function (err, res) {
-                                        if (!err) {
-                                            console.log(dateNow + ' : Wrong Keyword Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
-                                        }
-                                    });
+                                    try {
+                                        conn.connect(function (err) {
+                                            if (!err) {
+                                                conn.db.collection('sms_apps').insertOne(keywordNotFoundSmsPush, function (err, res) {
+                                                    if (!err) {
+                                                        console.log(dateNow + ' : Wrong Keyword Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    } catch (err) {
+                                        console.log(dateNow + ' Catch error Wrong Keyword conn');
+                                    }
                                 }
                             });
                         }

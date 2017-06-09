@@ -1,11 +1,10 @@
 var schedule = require('node-schedule');
 var path = require('path');
-//var fs = require('fs');
 var fs = require('graceful-fs');
 
-var conn = require(path.resolve() + '/connection');
+var conn = require(path.resolve() + '/connection.js');
 
-schedule.scheduleJob('* * * * * *', function () {
+schedule.scheduleJob('*/2 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     var drDir = path.resolve() + '/system/files/dr';
     if (fs.existsSync(drDir)) {
@@ -16,10 +15,10 @@ schedule.scheduleJob('* * * * * *', function () {
 
                     fs.readFile(filePath, 'utf8', function (err, data) {
                         if (!err) {
-                            //connection
-                            conn.connect(function (err) {
-                                if (!err) {
-                                    try {
+                            try {
+                                //connection
+                                conn.connect(function (err) {
+                                    if (!err) {
                                         var jsonData = JSON.parse(data);
 
                                         // Insert DR as Log
@@ -66,13 +65,15 @@ schedule.scheduleJob('* * * * * *', function () {
                                                 });
                                             }
                                         });
-                                    } catch (err) {
-                                        console.log(dateNow + ' Catch error DR Read file null/empty');
-                                    }
-                                } else {
-                                    console.log(dateNow + ' : DR Read => Connection DB refuse');
-                                }
-                            }); // if not connect DB
+
+                                    } 
+//                                    else {
+//                                        console.log(dateNow + ' : DR Read => Connection DB refuse');
+//                                    }
+                                });
+                            } catch (err) {
+                                console.log(dateNow + ' Catch error DR Read conn & file null/empty');
+                            }
                         }
                     });
 

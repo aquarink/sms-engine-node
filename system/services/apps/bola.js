@@ -5,11 +5,11 @@ var fs = require('graceful-fs');
 
 var objId = require('mongodb').ObjectID;
 
-var conn = require(path.resolve() + '/connection');
+var conn = require(path.resolve() + '/connection.js');
 
 var app = 'bola';
 
-schedule.scheduleJob('* * * * * *', function () {
+schedule.scheduleJob('*/2 * * * * *', function () {
 
     //////// CONFIG //////////
     // Random number
@@ -154,9 +154,9 @@ schedule.scheduleJob('* * * * * *', function () {
                                                                 'msisdn': jsonData.msisdn,
                                                                 'sms_field': jsonData.sms_field,
                                                                 'keyword': jsonData.keyword,
-                                                                'trx_id': dateString + rand,
+                                                                'trx_id': jsonData.trx_id,
                                                                 'trx_date': dateNow,
-                                                                'session_id': dateString + new objId(),
+                                                                'session_id': jsonData.session_id,
                                                                 'session_date': dateNow,
                                                                 'reg_type': jsonData.reg_type
                                                             },
@@ -193,10 +193,10 @@ schedule.scheduleJob('* * * * * *', function () {
                                                             'msisdn': jsonData.msisdn,
                                                             'sms_field': jsonData.sms_field,
                                                             'keyword': jsonData.keyword,
-                                                            'trx_id': jsonData.trx_id,
+                                                            'trx_id': '',
                                                             'trx_date': jsonData.trx_date,
-                                                            'session_id': jsonData.session_id,
-                                                            'session_date': jsonData.session_date,
+                                                            'session_id': dateString + new objId(),
+                                                            'session_date': dateNow,
                                                             'reg_type': jsonData.reg_type
                                                         },
 
@@ -240,17 +240,18 @@ schedule.scheduleJob('* * * * * *', function () {
                                                         } catch (err) {
                                                             console.log(dateNow + ' Catch error Bola sms_apps insertOne');
                                                         }
-                                                    } else {
-                                                        console.log('b-302');
-                                                    }
+                                                    } 
+//                                                    else {
+//                                                        console.log('b-302');
+//                                                    }
                                                 });
                                             }
                                         });
 
-                                    } else {
-                                        console.log(dateNow + ' : App ' + app + ' => Connection DB refuse');
                                     }
-
+//                                    else {
+//                                        console.log(dateNow + ' : App ' + app + ' => Connection DB refuse');
+//                                    }
                                 });
                             } catch (err) {
                                 console.log(dateNow + ' Catch error Bola Logic');
