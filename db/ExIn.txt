@@ -9,3 +9,6 @@ Import
 D:\MongoDB\Server\3.4\bin\mongoimport.exe -d smsgwlocal -c apps_config apps_config.json
 D:\MongoDB\Server\3.4\bin\mongoimport.exe -d smsgwlocal -c apps_content apps_content.json
 D:\MongoDB\Server\3.4\bin\mongoimport.exe -d smsgwlocal -c telco_config telco_config.json
+
+
+http://pm2.keymetrics.io/
