@@ -1,8 +1,7 @@
 var schedule = require('node-schedule');
-var path = require('path');
 var reQuest = require('sync-request');
 
-var conn = require(path.resolve() + '/connection.js');
+var conn = require('../../../connection.js');
 
 var telcoProvider = 'xl';
 
@@ -48,7 +47,8 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                                     } else {
                                         for (var i = 0; i < smsPushData.length; i++) {
                                             try {
-                                                var resReq = reQuest('GET', 'http://localhost:3010/xl/incoming?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=PULL-' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212');
+                                                var resReq = reQuest('GET', 'http://localhost/simulator/push.php?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212');
+                                                //var resReq = reQuest('GET', 'http://103.29.214.126/simulator/push.php?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212');
                                                 if (resReq.statusCode === 200) {
                                                     function newObj(callback) {
                                                         if (resReq.getBody('utf8') === 'ok') {
@@ -149,6 +149,7 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                                                 }
                                             } catch (err) {
                                                 console.log(dateNow + ' Catch error ' + telcoProvider + ' push url');
+                                                //console.log('http://localhost:3010/xl/incoming?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212')
                                             }
                                         }
                                     }

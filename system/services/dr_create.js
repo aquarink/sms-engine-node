@@ -64,7 +64,7 @@ router.get('/xl', function (req, res, next) {
             fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
                 if (!err) {
                     res.send('DR OK');
-                    console.log(dateNow + ' : DR Create => ' + telco + ' ' + msisdn + ' created if');
+                    console.log(dateNow + ' : DR Create => ' + telco + ' ' + msisdnNew + ' created if');
                 } else {
                     console.log(err + 'DR 65');
                 }
@@ -85,7 +85,7 @@ router.get('/xl', function (req, res, next) {
                     fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
                         if (!err) {
                             res.send('DR OK');
-                            console.log(dateNow + ' : DR Create => ' + telco + ' ' + msisdn + ' created else');
+                            console.log(dateNow + ' : DR Create => ' + telco + ' ' + msisdnNew + ' created else');
                         } else {
                             console.log(err + 'DR 85');
                         }

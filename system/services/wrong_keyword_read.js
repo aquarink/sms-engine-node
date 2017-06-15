@@ -3,7 +3,7 @@ var path = require('path');
 //var fs = require('fs');
 var fs = require('graceful-fs');
 
-var conn = require(path.resolve() + '/connection.js');
+var conn = require('../../connection.js');
 
 schedule.scheduleJob('*/2 * * * * *', function () {
     // Random number

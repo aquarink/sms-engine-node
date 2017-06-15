@@ -4,7 +4,7 @@ var fsNode = require('fs');
 var fs = require('graceful-fs');
 var mkdirp = require('mkdirp');
 
-var conn = require(path.resolve() + '/connection.js');
+var conn = require('../../connection.js');
 
 schedule.scheduleJob('*/2 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -21,10 +21,6 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                                 //connection
                                 conn.connect(function (err) {
                                     if (!err) {
-
-                                        const stats = fsNode.statSync(filePath);
-                                        const fileSize = stats.size;
-//                                        if(fileSize )
                                         var jsonData = JSON.parse(data);
 
                                         if (jsonData.reg_type === 1) {

@@ -2,7 +2,7 @@ var schedule = require('node-schedule');
 var path = require('path');
 var fs = require('graceful-fs');
 
-var conn = require(path.resolve() + '/connection.js');
+var conn = require('../../connection.js');
 
 schedule.scheduleJob('*/2 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
