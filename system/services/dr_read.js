@@ -4,7 +4,7 @@ var fs = require('graceful-fs');
 
 var conn = require('../../connection.js');
 
-schedule.scheduleJob('*/2 * * * * *', function () {
+schedule.scheduleJob('*/1 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     var drDir = path.resolve() + '/system/files/dr';
     if (fs.existsSync(drDir)) {

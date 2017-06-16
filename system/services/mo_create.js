@@ -10,6 +10,8 @@ var router = express.Router();
 router.get('/xl', function (req, res, next) {
     // Telco Name
     var telco = 'xl';
+    
+    console.log('aaa');
 
     // Query String
     var msisdn = req.query.msisdn;

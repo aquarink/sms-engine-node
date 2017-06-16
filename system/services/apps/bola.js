@@ -5,11 +5,11 @@ var fs = require('graceful-fs');
 
 var objId = require('mongodb').ObjectID;
 
-var conn = require(path.resolve() + '/connection.js');
+var conn = require('../../../connection.js');
 
 var app = 'bola';
 
-schedule.scheduleJob('*/2 * * * * *', function () {
+schedule.scheduleJob('*/1 * * * * *', function () {
 
     //////// CONFIG //////////
     // Random number
