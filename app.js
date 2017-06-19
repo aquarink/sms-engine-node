@@ -14,6 +14,8 @@ var moReader = require('./system/services/mo_read');
 var drReader = require('./system/services/dr_read');
 var wrongKeywordRead = require('./system/services/wrong_keyword_read');
 
+//var dropDuplicate = require('./system/services/drop_duplicate');
+
 // App Service
 var appBola = require('./system/services/apps/bola');
 

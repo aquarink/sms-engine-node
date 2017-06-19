@@ -50,13 +50,17 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                             };
 
                             function unlinkFile(theFile, callback) {
-                                fs.unlink(theFile, function (err) {
-                                    if (!err) {
-                                        callback('ok');
-                                    } else {
-                                        callback(err);
-                                    }
-                                });
+                                try {
+                                    fs.unlink(theFile, function (err) {
+                                        if (!err) {
+                                            callback('ok');
+                                        } else {
+                                            callback(err);
+                                        }
+                                    });
+                                } catch (err) {
+                                    console.log(dateNow + ' :  Catch error wrong keyword unlink file');
+                                }
                             }
 
                             unlinkFile(filePath, function (result) {
@@ -64,11 +68,15 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                                     try {
                                         conn.connect(function (err) {
                                             if (!err) {
-                                                conn.db.collection('sms_apps').insertOne(keywordNotFoundSmsPush, function (err, res) {
-                                                    if (!err) {
-                                                        console.log(dateNow + ' : Wrong Keyword Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
-                                                    }
-                                                });
+                                                try {
+                                                    conn.db.collection('sms_apps').insertOne(keywordNotFoundSmsPush, function (err, res) {
+                                                        if (!err) {
+                                                            console.log(dateNow + ' : Wrong Keyword Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
+                                                        }
+                                                    });
+                                                } catch (err) {
+                                                    console.log(dateNow + ' :  Catch error wrong keyword sms_apps insertOne');
+                                                }
                                             }
                                         });
                                     } catch (err) {

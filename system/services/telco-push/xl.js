@@ -1,3 +1,4 @@
+const async = require('async');
 var schedule = require('node-schedule');
 var reQuest = require('request');
 var conn = require('../../../connection.js');
@@ -13,71 +14,154 @@ schedule.scheduleJob('*/3 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
     //////// CONFIG //////////
+
     try {
         conn.connect(function (err) {
             if (!err) {
                 conn.db.collection('telco_config').find({'telco_name': telcoProvider}).toArray(function (err, fetchData) {
                     if (!err) {
                         if (fetchData.length === 0) {
-                            callback(0);
+                            throw 'fetch data Kosong';
                         } else {
-                            for (var i = 0; i < fetchData.length; i++) {
-                                conn.db.collection('sms_apps').find({'telco.telco_name': fetchData[i].telco_name}).limit(fetchData[i].push_limit).toArray(function (err, smsPushData) {
-                                    if (!err) {
-                                        for (var i = 0; i < smsPushData.length; i++) {
-                                            if (smsPushData.length === 0) {
-                                                console.log('nullData');
-                                            } else {
-                                                var link = 'http://localhost/simulator-php/push.php?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212';
-                                                //var link = 'http://103.29.214.126/simulator/push.php?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212';
+                            async.each(fetchData, (telcoData, cb) => {
+                                conn.db.collection('sms_apps').find({'telco.telco_name': telcoData.telco_name}).limit(telcoData.push_limit).toArray(function (smsErr, smsPushData) {
+                                    if (!smsErr) {
+                                        //console.log('smsPushData', smsPushData);
+                                        async.map(smsPushData, (smsData, done) => {
+                                            //var link = 'http://localhost/simulator-php/push.php?username=admin&password=admin&msisdn=${smsData.origin.msisdn}&trxid=${smsData.origin.trx_id}&serviceId=${smsData.config.cost}&sms=${smsData.apps.content}&shortname=1212121212';
+                                            // var link = 'http://139.0.140.194/simulator/push.php?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212';
 
+                                            var link = `http://103.29.214.126/simulator/push.php?username=admin&password=admin&msisdn=${smsData.origin.msisdn}&trxid=${smsData.origin.trx_id}&serviceId=${smsData.config.cost}&sms=${smsData.apps.content}&shortname=1212121212`;
+                                            //var link = `http://localhost/simulator-php/push.php?username=admin&password=admin&msisdn=${smsData.origin.msisdn}&trxid=${smsData.origin.trx_id}&serviceId=${smsData.config.cost}&sms=${smsData.apps.content}&shortname=1212121212`;
 
-                                                // REQUEST
-                                                function requestUrl(uri, data, callback) {
-                                                    reQuest({uri: uri, method: 'GET'}, function (err, response, body) {
-                                                        if (!err) {
-                                                            if (response.statusCode === 200) {
-                                                                callback({'body': body, 'data': data});
-                                                            } else {
-                                                                console.log('not 200');
-                                                            }
-                                                        } else {
-                                                            console.log('err');
-                                                        }
-                                                    });
+                                            reQuest(link, (requestErr, response, body) => {
+                                                if (!requestErr) {
+                                                    if (response.statusCode === 200) {
+                                                        const newData = {
+                                                            body,
+                                                            data: smsData
+                                                        };
+                                                        done(null, newData);
+                                                    } else {
+                                                        done('not 200');
+                                                    }
+                                                } else {
+                                                    done(requestErr);
                                                 }
+                                            });
+                                        }, (loopSmsErr, smsResults) => {
+                                            if (loopSmsErr) {
+                                                console.log('loopSmsErr', loopSmsErr);
+                                                cb(loopSmsErr);
+                                            } else {
+                                                function newObj(callback) {
+                                                    // mutate smsResults di sini
+                                                    for (var i = 0; i < smsResults.length; i++) {
+                                                        if (smsResults[i].body === 'ok') {
+                                                            //Trx Id exist // Pull
+                                                            var smsPush = {
+                                                                telco: {
+                                                                    'telco_name': smsResults[i].data.telco.telco_name
+                                                                },
+                                                                origin: {
+                                                                    'shortcode': smsResults[i].data.origin.shortcode,
+                                                                    'msisdn': smsResults[i].data.origin.msisdn,
+                                                                    'sms_field': smsResults[i].data.origin.sms_field,
+                                                                    'keyword': smsResults[i].data.origin.keyword,
+                                                                    'trx_id': smsResults[i].data.origin.trx_id,
+                                                                    'trx_date': smsResults[i].data.origin.trx_date,
+                                                                    'session_id': smsResults[i].data.origin.session_id,
+                                                                    'session_date': smsResults[i].data.origin.session_date,
+                                                                    'reg_type': smsResults[i].data.origin.reg_type
+                                                                },
 
-                                                function responseUrl(callback) {
-                                                    function a(callback) {
-                                                        requestUrl(link, smsPushData[i], function (result) {
-                                                            callback({'datas': smsPushData[i], 'res': result});
+                                                                apps: {
+                                                                    'name': smsResults[i].data.apps.name,
+                                                                    'no': smsResults[i].data.apps.no,
+                                                                    'content': smsResults[i].data.apps.content
+                                                                },
+                                                                config: {
+                                                                    'cost': smsResults[i].data.config.cost,
+                                                                    'send_status': 1
+                                                                }
+                                                            };
+
+                                                            callback({"obj": smsPush, "body": smsResults[i].body});
+
+                                                        } else {
+                                                            //Trx Id not exist // Push
+                                                            var smsPush = {
+                                                                telco: {
+                                                                    'telco_name': smsResults[i].data.telco.telco_name
+                                                                },
+                                                                origin: {
+                                                                    'shortcode': smsResults[i].data.origin.shortcode,
+                                                                    'msisdn': smsResults[i].data.origin.msisdn,
+                                                                    'sms_field': smsResults[i].data.origin.sms_field,
+                                                                    'keyword': smsResults[i].data.origin.keyword,
+                                                                    'trx_id': smsResults[i].body,
+                                                                    'trx_date': smsResults[i].data.origin.trx_date,
+                                                                    'session_id': smsResults[i].data.origin.session_id,
+                                                                    'session_date': smsResults[i].data.origin.session_date,
+                                                                    'reg_type': smsResults[i].data.origin.reg_type
+                                                                },
+
+                                                                apps: {
+                                                                    'name': smsResults[i].data.apps.name,
+                                                                    'no': smsResults[i].data.apps.no,
+                                                                    'content': smsResults[i].data.apps.content
+                                                                },
+                                                                config: {
+                                                                    'cost': smsResults[i].data.config.cost,
+                                                                    'send_status': 1
+                                                                }
+                                                            };
+                                                            callback({"obj": smsPush, "body": smsResults[i].body});
+                                                        }
+                                                    }
+                                                }
+                                                newObj(function (result) {
+                                                    // Delete data from sms_apps
+                                                    function deleteSmsApps(dt, callback) {
+                                                        conn.db.collection('sms_apps').remove({"origin.session_id": dt.origin.session_id}, function (err, result) {
+                                                            if (!err) {
+                                                                callback('deleteOk');
+                                                            } else {
+                                                                callback('err');
+                                                            }
                                                         });
                                                     }
 
-                                                    a(function (r) {
-                                                        callback({'data': r.datas, 'result': r.res});
+                                                    deleteSmsApps(result.obj, function (delSms) {
+                                                        if (delSms === 'deleteOk') {
+                                                            conn.db.collection('sms_push').insertOne(result.obj, function (err, res) {
+                                                                if (!err) {
+                                                                    console.log(dateNow + ' : Telco Push : Push, Delete and Insert ok : ' + result.body);
+                                                                } else {
+                                                                    console.log(delSms + ' Err');
+                                                                }
+                                                            });
+                                                        }
                                                     });
-                                                }
-
-                                                responseUrl(function (rst) {
-                                                    console.log(rst);
-//                                                    if (rst.data !== undefined) {
-//                                                        if (rst.result === 'ok') {
-//                                                            console.log(rst.data.origin.trx_id + ' a');
-//                                                        } else {
-//                                                            console.log(rst.data.origin.trx_id + ' b');
-//                                                        }
-//                                                    }
-
                                                 });
+                                                cb(); // call callback for next step
                                             }
-                                        }
+                                        });
+                                    } else {
+                                        cb(smsErr);
                                     }
                                 });
-                            }
+                            }, (loopFetchErr) => {
+                                if (loopFetchErr) {
+                                    console.log('error dari looping fetch data', loopFetchErr);
+                                } else {
+                                    //console.log('Succes Final');
+                                }
+                            });
                         }
                     } else {
                         console.log('err');
+                        throw err;
                     }
                 });
             }

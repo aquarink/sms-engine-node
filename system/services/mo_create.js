@@ -10,8 +10,6 @@ var router = express.Router();
 router.get('/xl', function (req, res, next) {
     // Telco Name
     var telco = 'xl';
-    
-    console.log('aaa');
 
     // Query String
     var msisdn = req.query.msisdn;
@@ -82,35 +80,47 @@ router.get('/xl', function (req, res, next) {
         var smsFileName = path.resolve() + '/system/files/mo/MO-' + dateString + new objId() + '.json';
 
         if (fs.existsSync(path.resolve() + '/system/files/mo')) {
-            fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
-                if (!err) {
-                    res.send('MO OK');
-                    console.log(dateNow + ' : MO Create => ' + telco + ' ' + msisdn + ' created if');
-                } else {
-                    console.log(err);
-                }
-            });
-        } else {
-            function makeDir(callback) {
-                mkdirp(path.resolve() + '/system/files/mo', function (err) {
+            try {
+                fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
                     if (!err) {
-                        callback('mkdirOk');
+                        res.send('MO OK');
+                        console.log(dateNow + ' : MO Create => ' + telco + ' ' + msisdn + ' created if');
                     } else {
-                        callback(err);
+                        console.log(err);
                     }
                 });
+            } catch (err) {
+                console.log(dateNow + ' :  Catch error dr_create logic if');
+            }
+        } else {
+            function makeDir(callback) {
+                try {
+                    mkdirp(path.resolve() + '/system/files/mo', function (err) {
+                        if (!err) {
+                            callback('mkdirOk');
+                        } else {
+                            callback(err);
+                        }
+                    });
+                } catch (err) {
+                    console.log(dateNow + ' :  Catch error mo_create mkdir');
+                }
             }
 
             makeDir(function (result) {
                 if (result === 'mkdirOk') {
-                    fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
-                        if (!err) {
-                            res.send('MO OK');
-                            console.log(dateNow + ' : MO Create => ' + telco + ' ' + msisdn + ' created else');
-                        } else {
-                            console.log(err);
-                        }
-                    });
+                    try {
+                        fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
+                            if (!err) {
+                                res.send('MO OK');
+                                console.log(dateNow + ' : MO Create => ' + telco + ' ' + msisdn + ' created else');
+                            } else {
+                                console.log(err);
+                            }
+                        });
+                    } catch (err) {
+                        console.log(dateNow + ' :  Catch error mo_create logic else');
+                    }
                 } else {
                     console.log(result);
                 }
