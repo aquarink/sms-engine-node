@@ -63,6 +63,7 @@ schedule.scheduleJob('*/1 * * * * *', function () {
                                                             fs.unlink(filePath, function (err) {
                                                                 if (!err) {
                                                                     console.log(dateNow + ' : DR Read => Add delivery report & Unlink file ' + jsonData.trx_id);
+                                                                    conn.db.close();
                                                                 }
                                                             });
                                                         } catch (err) {

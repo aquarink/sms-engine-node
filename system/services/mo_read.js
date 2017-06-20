@@ -183,6 +183,7 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                                                     conn.db.collection('subscriber').update({'msisdn': jsonData.msisdn, 'keyword': jsonData.keyword}, {$set: {'reg_type': jsonData.reg_type}}, function (err, result) {
                                                         if (!err) {
                                                             console.log(dateNow + ' : Mo Read => Unreg command success');
+                                                            conn.db.close();
                                                         }
                                                     });
                                                 } catch (err) {

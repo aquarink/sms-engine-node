@@ -235,12 +235,13 @@ schedule.scheduleJob('*/1 * * * * *', function () {
                                                             conn.db.collection('sms_apps').insertOne(newObj, function (err, res) {
                                                                 if (!err) {
                                                                     console.log(dateNow + ' : App Message Create => ' + jsonData.telco + ' - ' + jsonData.msisdn + ' if');
+                                                                    conn.db.close();
                                                                 }
                                                             });
                                                         } catch (err) {
                                                             console.log(dateNow + ' Catch error Bola sms_apps insertOne');
                                                         }
-                                                    } 
+                                                    }
 //                                                    else {
 //                                                        console.log('b-302');
 //                                                    }

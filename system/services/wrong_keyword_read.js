@@ -72,6 +72,7 @@ schedule.scheduleJob('*/2 * * * * *', function () {
                                                     conn.db.collection('sms_apps').insertOne(keywordNotFoundSmsPush, function (err, res) {
                                                         if (!err) {
                                                             console.log(dateNow + ' : Wrong Keyword Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
+                                                            conn.db.close();
                                                         }
                                                     });
                                                 } catch (err) {

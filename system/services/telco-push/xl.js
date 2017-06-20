@@ -28,9 +28,6 @@ schedule.scheduleJob('*/3 * * * * *', function () {
                                     if (!smsErr) {
                                         //console.log('smsPushData', smsPushData);
                                         async.map(smsPushData, (smsData, done) => {
-                                            //var link = 'http://localhost/simulator-php/push.php?username=admin&password=admin&msisdn=${smsData.origin.msisdn}&trxid=${smsData.origin.trx_id}&serviceId=${smsData.config.cost}&sms=${smsData.apps.content}&shortname=1212121212';
-                                            // var link = 'http://139.0.140.194/simulator/push.php?username=admin&password=admin&msisdn=' + smsPushData[i].origin.msisdn + '&trxid=' + smsPushData[i].origin.trx_id + '&serviceId=' + smsPushData[i].config.cost + '&sms=' + smsPushData[i].apps.content + '&shortname=1212121212';
-
                                             var link = `http://103.29.214.126/simulator/push.php?username=admin&password=admin&msisdn=${smsData.origin.msisdn}&trxid=${smsData.origin.trx_id}&serviceId=${smsData.config.cost}&sms=${smsData.apps.content}&shortname=1212121212`;
                                             //var link = `http://localhost/simulator-php/push.php?username=admin&password=admin&msisdn=${smsData.origin.msisdn}&trxid=${smsData.origin.trx_id}&serviceId=${smsData.config.cost}&sms=${smsData.apps.content}&shortname=1212121212`;
 
@@ -135,10 +132,9 @@ schedule.scheduleJob('*/3 * * * * *', function () {
                                                     deleteSmsApps(result.obj, function (delSms) {
                                                         if (delSms === 'deleteOk') {
                                                             conn.db.collection('sms_push').insertOne(result.obj, function (err, res) {
-                                                                if (!err) {
+                                                                if (!err) {                                                                    
                                                                     console.log(dateNow + ' : Telco Push : Push, Delete and Insert ok : ' + result.body);
-                                                                } else {
-                                                                    console.log(delSms + ' Err');
+                                                                    conn.db.close();
                                                                 }
                                                             });
                                                         }
