@@ -12,7 +12,7 @@ schedule.scheduleJob('*/2 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
 
-    var pushDir = path.resolve() + '/system/files/apps/other';
+    var pushDir = path.join(__dirname + '/../', '/files/other');
     if (fs.existsSync(pushDir)) {
         fs.readdir(pushDir, (err, files) => {
             if (!err) {

@@ -58,9 +58,9 @@ router.get('/xl', function (req, res, next) {
         };
 
         // File Name
-        var smsFileName = path.resolve() + '/system/files/dr/DR-' + dateString + new objId() + '.json';
-
-        if (fs.existsSync(path.resolve() + '/system/files/dr')) {
+        var smsFileName = path.join(__dirname + '/../', '/files/dr')+'/DR-' + dateString + new objId() + '.json';
+        //console.log(smsFileName);
+        if (fs.existsSync(path.join(__dirname + '/../', '/files/dr'))) {
             try {
                 fs.writeFile(smsFileName, JSON.stringify(smsObj), function (err) {
                     if (!err) {
@@ -76,7 +76,7 @@ router.get('/xl', function (req, res, next) {
         } else {
             function makeDir(callback) {
                 try {
-                    mkdirp(path.resolve() + '/system/files/dr', function (err) {
+                    mkdirp(path.join(__dirname + '/../', '/files/dr'), function (err) {
                         if (!err) {
                             callback('mkdirOk');
                         } else {

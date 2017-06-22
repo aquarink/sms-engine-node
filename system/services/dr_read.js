@@ -6,7 +6,8 @@ var conn = require('../../connection.js');
 
 schedule.scheduleJob('*/1 * * * * *', function () {
     var dateNow = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-    var drDir = path.resolve() + '/system/files/dr';
+    //var drDir = path.join(__dirname+'/../', '/files/dr');
+    var drDir = '/home/developer/engine-sms/system/files/dr';
     if (fs.existsSync(drDir)) {
         fs.readdir(drDir, (err, files) => {
             if (!err) {
@@ -63,7 +64,6 @@ schedule.scheduleJob('*/1 * * * * *', function () {
                                                             fs.unlink(filePath, function (err) {
                                                                 if (!err) {
                                                                     console.log(dateNow + ' : DR Read => Add delivery report & Unlink file ' + jsonData.trx_id);
-                                                                    conn.db.close();
                                                                 }
                                                             });
                                                         } catch (err) {

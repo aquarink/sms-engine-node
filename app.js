@@ -9,6 +9,8 @@ var app = express();
 var moCreate = require('./system/services/mo_create');
 var drCreate = require('./system/services/dr_create');
 
+var check = require('./system/services/check');
+
 // Services
 var moReader = require('./system/services/mo_read');
 var drReader = require('./system/services/dr_read');

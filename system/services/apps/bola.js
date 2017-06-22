@@ -19,12 +19,14 @@ schedule.scheduleJob('*/1 * * * * *', function () {
     var dateString = new Date().toISOString().replace(/-/, '').replace(/-/, '').replace(/:/, '').replace(/:/, '').replace(/T/, '').replace(/\..+/, '');
     //////// CONFIG //////////
 
-    var appDir = path.resolve() + '/system/files/apps/' + app;
+    var appDir = path.join(__dirname, '../../files/apps/') + app;
+
     if (fs.existsSync(appDir)) {
         fs.readdir(appDir, (err, files) => {
             if (!err) {
                 files.forEach(file => {
                     var filePath = appDir + '/' + file;
+                    
                     fs.readFile(filePath, 'utf8', function (err, data) {
                         if (!err) {
                             var jsonData = JSON.parse(data);
@@ -117,7 +119,7 @@ schedule.scheduleJob('*/1 * * * * *', function () {
                                                                 }
                                                             });
                                                         } catch (err) {
-                                                            console.log(dateNow + ' Catch error apps_content find');
+                                                            console.log(dateNow + ' Catch error ' + app + ' apps_content find');
                                                         }
                                                     }
 
@@ -139,91 +141,104 @@ schedule.scheduleJob('*/1 * * * * *', function () {
 
                                         // New Object Content
                                         function newObject(callback) {
-                                            getContent(function (content) {
-                                                if (content === 'errDataSmsPush') {
-                                                    callback('errGetcontent');
-                                                } else {
-                                                    // Welcome message
-                                                    if (content.pushInfo === 1) {
-                                                        var welcome_message = {
-                                                            telco: {
-                                                                'telco_name': jsonData.telco
-                                                            },
-                                                            origin: {
-                                                                'shortcode': jsonData.shortcode,
-                                                                'msisdn': jsonData.msisdn,
-                                                                'sms_field': jsonData.sms_field,
-                                                                'keyword': jsonData.keyword,
-                                                                'trx_id': jsonData.trx_id,
-                                                                'trx_date': dateNow,
-                                                                'session_id': jsonData.session_id,
-                                                                'session_date': dateNow,
-                                                                'reg_type': jsonData.reg_type
-                                                            },
+                                            try {
+                                                getContent(function (content) {
+                                                    if (content === 'errDataSmsPush') {
+                                                        callback('errGetcontent');
+                                                    } else {
+                                                        // Welcome message
+                                                        if (content.pushInfo === 1) {
+                                                            var welcome_message = {
+                                                                telco: {
+                                                                    'telco_name': jsonData.telco
+                                                                },
+                                                                origin: {
+                                                                    'shortcode': jsonData.shortcode,
+                                                                    'msisdn': jsonData.msisdn,
+                                                                    'sms_field': jsonData.sms_field,
+                                                                    'keyword': jsonData.keyword,
+                                                                    'trx_id': jsonData.trx_id,
+                                                                    'trx_date': dateNow,
+                                                                    'session_id': jsonData.session_id,
+                                                                    'session_date': dateNow,
+                                                                    'reg_type': jsonData.reg_type
+                                                                },
 
-                                                            apps: {
-                                                                'name': app,
-                                                                'no': '',
-                                                                'content': 'Welcome message ' + app
-                                                            },
-                                                            config: {
-                                                                'cost': 'PULL-0',
-                                                                'send_status': 1
-                                                            }
-                                                        };
-                                                        try {
-                                                            conn.db.collection('sms_apps').insert(welcome_message, function (err, res) {
-                                                                if (!err) {
-                                                                    console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
+                                                                apps: {
+                                                                    'name': app,
+                                                                    'no': '',
+                                                                    'content': 'Welcome message ' + app
+                                                                },
+                                                                config: {
+                                                                    'cost': 'PULL-0',
+                                                                    'send_status': 1
                                                                 }
-                                                            });
+                                                            };
+                                                            try {
+                                                                conn.db.collection('sms_apps').insert(welcome_message, function (err, res) {
+                                                                    if (!err) {
+                                                                        console.log(dateNow + ' : Welcome Message Create => ' + jsonData.telco + ' ' + jsonData.msisdn);
+                                                                    }
+                                                                });
+                                                            } catch (err) {
+                                                                console.log(dateNow + ' Catch error ' + app + ' sms_apps insertOne');
+                                                            }
+                                                        }
+
+                                                        // -----------------------------
+                                                        try {
+                                                            if (content.content.no_content !== undefined) {
+                                                                var sms_app = {
+                                                                    telco: {
+                                                                        'telco_name': jsonData.telco
+                                                                    },
+                                                                    origin: {
+                                                                        'shortcode': jsonData.shortcode,
+                                                                        'msisdn': jsonData.msisdn,
+                                                                        'sms_field': jsonData.sms_field,
+                                                                        'keyword': jsonData.keyword,
+                                                                        'trx_id': '',
+                                                                        'trx_date': jsonData.trx_date,
+                                                                        'session_id': dateString + new objId(),
+                                                                        'session_date': dateNow,
+                                                                        'reg_type': jsonData.reg_type
+                                                                    },
+
+                                                                    apps: {
+                                                                        'name': app,
+                                                                        'no': content.content.no_content,
+                                                                        'content': content.content.content_field
+                                                                    },
+                                                                    config: {
+                                                                        'cost': 'PULL-' + content.config.cost.pull,
+                                                                        'send_status': 1
+                                                                    }
+                                                                };
+                                                                callback(sms_app);
+                                                            }
                                                         } catch (err) {
-                                                            console.log(dateNow + ' Catch error Bola sms_apps insertOne');
+                                                            //console.log(dateNow + ' :  Catch error ' + app + ' sms_app');
                                                         }
                                                     }
-
-                                                    // -----------------------------
-
-                                                    var sms_app = {
-                                                        telco: {
-                                                            'telco_name': jsonData.telco
-                                                        },
-                                                        origin: {
-                                                            'shortcode': jsonData.shortcode,
-                                                            'msisdn': jsonData.msisdn,
-                                                            'sms_field': jsonData.sms_field,
-                                                            'keyword': jsonData.keyword,
-                                                            'trx_id': '',
-                                                            'trx_date': jsonData.trx_date,
-                                                            'session_id': dateString + new objId(),
-                                                            'session_date': dateNow,
-                                                            'reg_type': jsonData.reg_type
-                                                        },
-
-                                                        apps: {
-                                                            'name': app,
-                                                            'no': content.content.no_content,
-                                                            'content': content.content.content_field
-                                                        },
-                                                        config: {
-                                                            'cost': 'PULL-' + content.config.cost.pull,
-                                                            'send_status': 1
-                                                        }
-                                                    };
-                                                    callback(sms_app);
-                                                }
-                                            });
+                                                });
+                                            } catch (err) {
+                                                console.log(dateNow + ' :  Catch error ' + app + ' getContent');
+                                            }
                                         }
 
                                         // Delete File 
                                         function delFile(file, callback) {
-                                            fs.unlink(file, function (err) {
-                                                if (!err) {
-                                                    callback('ok');
-                                                } else {
-                                                    callback('err');
-                                                }
-                                            });
+                                            try {
+                                                fs.unlink(file, function (err) {
+                                                    if (!err) {
+                                                        callback('ok');
+                                                    } else {
+                                                        callback('err');
+                                                    }
+                                                });
+                                            } catch (err) {
+                                                console.log(dateNow + ' :  Catch error ' + app + ' fs.unlink');
+                                            }
                                         }
 
                                         // execute
@@ -239,12 +254,9 @@ schedule.scheduleJob('*/1 * * * * *', function () {
                                                                 }
                                                             });
                                                         } catch (err) {
-                                                            console.log(dateNow + ' Catch error Bola sms_apps insertOne');
+                                                            console.log(dateNow + ' Catch error ' + app + ' sms_apps insertOne');
                                                         }
                                                     }
-//                                                    else {
-//                                                        console.log('b-302');
-//                                                    }
                                                 });
                                             }
                                         });
@@ -255,13 +267,15 @@ schedule.scheduleJob('*/1 * * * * *', function () {
 //                                    }
                                 });
                             } catch (err) {
-                                console.log(dateNow + ' Catch error Bola Logic');
+                                console.log(dateNow + ' Catch error ' + app + ' Logic');
                             }
                         }
                     });
                 });
             }
         });
+    } else {
+        console.log('asas');
     }
 });
 
